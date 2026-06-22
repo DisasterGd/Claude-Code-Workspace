@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binary Capacity Converter — 二进制容量换算工具</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   CSS Custom Properties (Design Tokens)
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --color-bg:        #0f172a;
+  --color-surface:   #1e293b;
+  --color-surface2:  #334155;
+  --color-border:    #475569;
+  --color-text:      #f1f5f9;
+  --color-text2:     #94a3b8;
+  --color-text3:     #64748b;
+  --color-accent:    #6366f1;
+  --color-accent-hv: #818cf8;
+  --color-error:     #f87171;
+  --color-success:   #34d399;
+  --color-binary:    #60a5fa;
+  --color-decimal:   #f59e0b;
+  --radius-card:     12px;
+  --radius-input:    8px;
+  --radius-btn:      8px;
+  --shadow-card:     0 1px 3px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-btn:      0 1px 2px rgba(0,0,0,0.3);
+  --transition:      180ms ease;
+}
+
+/* Light theme overrides */
+[data-theme="light"] {
+  --color-bg:        #f8fafc;
+  --color-surface:   #ffffff;
+  --color-surface2:  #f1f5f9;
+  --color-border:    #cbd5e1;
+  --color-text:      #0f172a;
+  --color-text2:     #475569;
+  --color-text3:     #94a3b8;
+  --color-error:     #dc2626;
+  --color-success:   #059669;
+  --shadow-card:     0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-btn:      0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* System preference auto-detection (only when no manual override) */
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) {
+    --color-bg:        #f8fafc;
+    --color-surface:   #ffffff;
+    --color-surface2:  #f1f5f9;
+    --color-border:    #cbd5e1;
+    --color-text:      #0f172a;
+    --color-text2:     #475569;
+    --color-text3:     #94a3b8;
+    --color-error:     #dc2626;
+    --color-success:   #059669;
+    --shadow-card:     0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
+    --shadow-btn:      0 1px 2px rgba(0,0,0,0.06);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Reset & Base
+   ═══════════════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans SC', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 48px;
+  transition: background var(--transition), color var(--transition);
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Header
+   ═══════════════════════════════════════════════════════════════════════════ */
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.header .subtitle {
+  color: var(--color-text2);
+  font-size: 0.925rem;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-btn);
+}
+.theme-toggle:hover {
+  background: var(--color-surface2);
+  transform: scale(1.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Converter Section
+   ═══════════════════════════════════════════════════════════════════════════ */
+.converter {
+  width: 100%;
+  max-width: 800px;
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 32px 28px;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+.converter-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: end;
+}
+
+/* Input Groups */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text2);
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1.5rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-weight: 500;
+  background: var(--color-surface2);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-input);
+  color: var(--color-text);
+  outline: none;
+  transition: all var(--transition);
+}
+
+.input-group input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.input-group input.input-error {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+}
+
+.input-group select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: var(--color-surface2);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-input);
+  color: var(--color-text);
+  cursor: pointer;
+  outline: none;
+  transition: all var(--transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.input-group select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.input-error-msg {
+  font-size: 0.8rem;
+  color: var(--color-error);
+  min-height: 1.2em;
+  transition: opacity var(--transition);
+}
+
+/* Swap Button */
+.swap-btn {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+  margin-bottom: 42px; /* align with inputs above select */
+  flex-shrink: 0;
+}
+
+.swap-btn:hover {
+  background: var(--color-accent-hv);
+  transform: rotate(180deg) scale(1.08);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Formula Bar
+   ═══════════════════════════════════════════════════════════════════════════ */
+.formula-bar {
+  margin-top: 20px;
+  padding: 14px 18px;
+  background: var(--color-surface2);
+  border-radius: var(--radius-input);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.875rem;
+  color: var(--color-text2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  white-space: nowrap;
+  transition: background var(--transition);
+}
+
+.formula-bar .formula-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.formula-bar .copy-btn {
+  flex-shrink: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text2);
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.formula-bar .copy-btn:hover {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Equivalents Section
+   ═══════════════════════════════════════════════════════════════════════════ */
+.equivalents {
+  width: 100%;
+  max-width: 800px;
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.equivalents-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+.equivalents-card h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.equivalents-card.binary h3 { color: var(--color-binary); }
+.equivalents-card.decimal h3 { color: var(--color-decimal); }
+
+.equivalents-card h3 .badge {
+  font-size: 0.65rem;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-weight: 600;
+}
+
+.equivalents-card.binary h3 .badge {
+  background: rgba(96, 165, 250, 0.15);
+  color: var(--color-binary);
+}
+
+.equivalents-card.decimal h3 .badge {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--color-decimal);
+}
+
+.equiv-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--color-surface2);
+  font-size: 0.9rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  transition: border-color var(--transition);
+}
+
+.equiv-row:last-child { border-bottom: none; }
+
+.equiv-row .equiv-unit {
+  color: var(--color-text2);
+  font-size: 0.78rem;
+  min-width: 42px;
+}
+
+.equiv-row .equiv-value {
+  font-weight: 500;
+  text-align: right;
+  flex: 1;
+  margin: 0 10px;
+}
+
+.equiv-row.highlight {
+  background: rgba(99, 102, 241, 0.08);
+  margin: 0 -8px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 6px;
+}
+
+.equiv-row .mini-copy {
+  background: none;
+  border: none;
+  color: var(--color-text3);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 3px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: all var(--transition);
+}
+
+.equiv-row:hover .mini-copy { opacity: 1; }
+.equiv-row .mini-copy:hover {
+  background: var(--color-surface2);
+  color: var(--color-accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Reference Table
+   ═══════════════════════════════════════════════════════════════════════════ */
+.reference {
+  width: 100%;
+  max-width: 800px;
+  margin-top: 24px;
+}
+
+.reference details {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: background var(--transition);
+}
+
+.reference summary {
+  padding: 16px 24px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.925rem;
+  user-select: none;
+  color: var(--color-text2);
+  transition: color var(--transition);
+}
+
+.reference summary:hover { color: var(--color-text); }
+
+.reference .ref-content {
+  padding: 0 24px 20px;
+  overflow-x: auto;
+}
+
+.reference table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.reference th {
+  text-align: left;
+  padding: 8px 12px;
+  color: var(--color-text2);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.reference td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--color-surface2);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.8rem;
+}
+
+.reference td:last-child {
+  font-size: 0.78rem;
+  color: var(--color-text2);
+}
+
+.reference tr:hover td { background: var(--color-surface2); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Toast Notifications
+   ═══════════════════════════════════════════════════════════════════════════ */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  padding: 10px 20px;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-card);
+  animation: toast-in 280ms ease forwards, toast-out 260ms ease 1.8s forwards;
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-12px) scale(0.95); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Footer
+   ═══════════════════════════════════════════════════════════════════════════ */
+.footer {
+  margin-top: 40px;
+  color: var(--color-text3);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Responsive — Mobile (< 640px)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  body { padding: 16px 12px 40px; }
+
+  .header h1 { font-size: 1.35rem; }
+
+  .converter { padding: 20px 16px; }
+
+  .converter-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .swap-btn {
+    margin: 4px auto;
+    transform: rotate(90deg);
+  }
+  .swap-btn:hover {
+    transform: rotate(270deg) scale(1.08);
+  }
+
+  .equivalents {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .formula-bar { font-size: 0.75rem; padding: 10px 14px; }
+
+  .theme-toggle { top: 12px; right: 12px; width: 36px; height: 36px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Print Styles (hidden — tool is interactive-only)
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media print {
+  .swap-btn, .theme-toggle, .copy-btn, .mini-copy, .toast-container { display: none !important; }
+  body { background: #fff; color: #000; }
+  .converter, .equivalents-card { box-shadow: none; border: 1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═════════════════════════════════════════════════════════════════════════
+     Theme Toggle
+     ═════════════════════════════════════════════════════════════════════════ -->
+<button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode" aria-label="Toggle theme">
+  <span id="themeIcon">☀️</span>
+</button>
+
+<!-- ═════════════════════════════════════════════════════════════════════════
+     Header
+     ═════════════════════════════════════════════════════════════════════════ -->
+<header class="header">
+  <h1>⚡ Binary Capacity Converter</h1>
+  <p class="subtitle">二进制容量换算工具 — IEC (binary) &amp; SI (decimal) unit conversion</p>
+</header>
+
+<!-- ═════════════════════════════════════════════════════════════════════════
+     Converter
+     ═════════════════════════════════════════════════════════════════════════ -->
+<main class="converter" id="converter">
+  <div class="converter-grid">
+    <!-- From -->
+    <div class="input-group" id="fromGroup">
+      <label for="fromInput">From · 输入</label>
+      <input type="text" id="fromInput" value="5" autocomplete="off" inputmode="decimal">
+      <select id="fromUnit">
+        <optgroup label="IEC Binary (1024ⁿ)">
+          <option value="bit">Bit (bit)</option>
+          <option value="B">Byte (B)</option>
+          <option value="KiB">Kibibyte (KiB)</option>
+          <option value="MiB">Mebibyte (MiB)</option>
+          <option value="GiB" selected>Gibibyte (GiB)</option>
+          <option value="TiB">Tebibyte (TiB)</option>
+          <option value="PiB">Pebibyte (PiB)</option>
+          <option value="EiB">Exbibyte (EiB)</option>
+        </optgroup>
+        <optgroup label="SI Decimal (1000ⁿ)">
+          <option value="KB">Kilobyte (KB)</option>
+          <option value="MB">Megabyte (MB)</option>
+          <option value="GB">Gigabyte (GB)</option>
+          <option value="TB">Terabyte (TB)</option>
+          <option value="PB">Petabyte (PB)</option>
+          <option value="EB">Exabyte (EB)</option>
+        </optgroup>
+      </select>
+      <span class="input-error-msg" id="fromError"></span>
+    </div>
+
+    <!-- Swap -->
+    <button class="swap-btn" id="swapBtn" title="Swap units" aria-label="Swap units">⇄</button>
+
+    <!-- To -->
+    <div class="input-group" id="toGroup">
+      <label for="toInput">To · 输出</label>
+      <input type="text" id="toInput" value="" autocomplete="off" inputmode="decimal" readonly>
+      <select id="toUnit">
+        <optgroup label="IEC Binary (1024ⁿ)">
+          <option value="bit">Bit (bit)</option>
+          <option value="B">Byte (B)</option>
+          <option value="KiB">Kibibyte (KiB)</option>
+          <option value="MiB">Mebibyte (MiB)</option>
+          <option value="GiB">Gibibyte (GiB)</option>
+          <option value="TiB">Tebibyte (TiB)</option>
+          <option value="PiB">Pebibyte (PiB)</option>
+          <option value="EiB">Exbibyte (EiB)</option>
+        </optgroup>
+        <optgroup label="SI Decimal (1000ⁿ)">
+          <option value="KB">Kilobyte (KB)</option>
+          <option value="MB">Megabyte (MB)</option>
+          <option value="GB" selected>Gigabyte (GB)</option>
+          <option value="TB">Terabyte (TB)</option>
+          <option value="PB">Petabyte (PB)</option>
+          <option value="EB">Exabyte (EB)</option>
+        </optgroup>
+      </select>
+      <span class="input-error-msg" id="toError"></span>
+    </div>
+  </div>
+
+  <!-- Formula Bar -->
+  <div class="formula-bar" id="formulaBar">
+    <span class="formula-text" id="formulaText">5 GiB × 8,589,934,592 bits/GiB ÷ 8,000,000,000 bits/GB = 5.3687 GB</span>
+    <button class="copy-btn" id="formulaCopyBtn" title="Copy formula">📋 Copy</button>
+  </div>
+</main>
+
+<!-- ═════════════════════════════════════════════════════════════════════════
+     Equivalents
+     ═════════════════════════════════════════════════════════════════════════ -->
+<section class="equivalents" id="equivalents">
+  <div class="equivalents-card binary" id="binaryCard">
+    <h3><span>🧮 IEC Binary</span> <span class="badge">×1024</span></h3>
+    <div id="binaryEquivs"></div>
+  </div>
+  <div class="equivalents-card decimal" id="decimalCard">
+    <h3><span>📏 SI Decimal</span> <span class="badge">×1000</span></h3>
+    <div id="decimalEquivs"></div>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════════════════════════
+     Reference
+     ═════════════════════════════════════════════════════════════════════════ -->
+<section class="reference">
+  <details>
+    <summary>📖 Unit Reference · 单位参考表</summary>
+    <div class="ref-content">
+      <table>
+        <thead>
+          <tr>
+            <th>Unit</th>
+            <th>Abbr</th>
+            <th>Family</th>
+            <th>Equivalent</th>
+            <th>Exact Bits</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Bit</td>        <td>bit</td>  <td>Both</td>     <td>1 bit</td>               <td>1</td></tr>
+          <tr><td>Byte</td>       <td>B</td>     <td>Both</td>     <td>8 bits</td>              <td>8</td></tr>
+          <tr><td>Kibibyte</td>   <td>KiB</td>   <td>Binary</td>   <td>1,024 B</td>             <td>8,192</td></tr>
+          <tr><td>Mebibyte</td>   <td>MiB</td>   <td>Binary</td>   <td>1,024 KiB</td>           <td>8,388,608</td></tr>
+          <tr><td>Gibibyte</td>   <td>GiB</td>   <td>Binary</td>   <td>1,024 MiB</td>           <td>8,589,934,592</td></tr>
+          <tr><td>Tebibyte</td>   <td>TiB</td>   <td>Binary</td>   <td>1,024 GiB</td>           <td>8,796,093,022,208</td></tr>
+          <tr><td>Pebibyte</td>   <td>PiB</td>   <td>Binary</td>   <td>1,024 TiB</td>           <td>9,007,199,254,740,992</td></tr>
+          <tr><td>Exbibyte</td>   <td>EiB</td>   <td>Binary</td>   <td>1,024 PiB</td>           <td>9,223,372,036,854,775,808</td></tr>
+          <tr><td>Kilobyte</td>   <td>KB</td>    <td>Decimal</td>  <td>1,000 B</td>             <td>8,000</td></tr>
+          <tr><td>Megabyte</td>   <td>MB</td>    <td>Decimal</td>  <td>1,000 KB</td>            <td>8,000,000</td></tr>
+          <tr><td>Gigabyte</td>   <td>GB</td>    <td>Decimal</td>  <td>1,000 MB</td>            <td>8,000,000,000</td></tr>
+          <tr><td>Terabyte</td>   <td>TB</td>    <td>Decimal</td>  <td>1,000 GB</td>            <td>8,000,000,000,000</td></tr>
+          <tr><td>Petabyte</td>   <td>PB</td>    <td>Decimal</td>  <td>1,000 TB</td>            <td>8,000,000,000,000,000</td></tr>
+          <tr><td>Exabyte</td>    <td>EB</td>    <td>Decimal</td>  <td>1,000 PB</td>            <td>8,000,000,000,000,000,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</section>
+
+<!-- ═════════════════════════════════════════════════════════════════════════
+     Footer
+     ═════════════════════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <p>Binary Capacity Converter · 1 KiB = 1024 bytes (IEC) · 1 KB = 1000 bytes (SI)</p>
+</footer>
+
+<!-- ═════════════════════════════════════════════════════════════════════════
+     Toast Container
+     ═════════════════════════════════════════════════════════════════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═════════════════════════════════════════════════════════════════════════
+     Scripts
+     ═════════════════════════════════════════════════════════════════════════ -->
+<script src="converter.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  var CV = window.CapacityConverter;
+  if (!CV) {
+    document.body.innerHTML = '<p style="color:red;text-align:center;padding:40px;">Error: converter.js failed to load.</p>';
+    return;
+  }
+
+  // ── DOM References ────────────────────────────────────────────────────
+  var fromInput      = document.getElementById('fromInput');
+  var fromUnit       = document.getElementById('fromUnit');
+  var fromError      = document.getElementById('fromError');
+  var toInput        = document.getElementById('toInput');
+  var toUnit         = document.getElementById('toUnit');
+  var toError        = document.getElementById('toError');
+  var swapBtn        = document.getElementById('swapBtn');
+  var formulaText    = document.getElementById('formulaText');
+  var formulaCopyBtn = document.getElementById('formulaCopyBtn');
+  var binaryEquivs   = document.getElementById('binaryEquivs');
+  var decimalEquivs  = document.getElementById('decimalEquivs');
+  var toastContainer = document.getElementById('toastContainer');
+  var themeToggle    = document.getElementById('themeToggle');
+  var themeIcon      = document.getElementById('themeIcon');
+
+  // ── State ─────────────────────────────────────────────────────────────
+  var sourceField    = 'from';   // 'from' or 'to' — which field is the user editing?
+  var debounceTimer  = null;
+  var DEBOUNCE_MS    = 150;
+
+  // ── Theme ─────────────────────────────────────────────────────────────
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+    try { localStorage.setItem('cc-theme', theme); } catch(e) { /* quota exceeded */ }
+  }
+
+  function toggleTheme() {
+    var current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'light' ? 'dark' : 'light');
+  }
+
+  // Restore saved theme
+  (function initTheme() {
+    var saved;
+    try { saved = localStorage.getItem('cc-theme'); } catch(e) {}
+    if (saved === 'light' || saved === 'dark') {
+      applyTheme(saved);
+    }
+    // If no saved theme, the CSS media query handles it via html:not([data-theme])
+  })();
+
+  themeToggle.addEventListener('click', toggleTheme);
+
+  // ── Conversion Logic ──────────────────────────────────────────────────
+  function runConversion() {
+    var srcField, srcInput, srcUnit, srcError, dstInput, dstUnit, dstError;
+
+    if (sourceField === 'from') {
+      srcField = 'from';
+      srcInput = fromInput; srcUnit = fromUnit; srcError = fromError;
+      dstInput = toInput;   dstUnit = toUnit;   dstError = toError;
+    } else {
+      srcField = 'to';
+      srcInput = toInput;   srcUnit = toUnit;   srcError = toError;
+      dstInput = fromInput; dstUnit = fromUnit; dstError = fromError;
+    }
+
+    // Validate source
+    var validation = CV.validate(srcInput.value);
+
+    if (!validation.valid) {
+      srcError.textContent = validation.error;
+      srcInput.classList.add('input-error');
+      dstInput.value = '';
+      dstError.textContent = '';
+      formulaText.textContent = 'Enter a value above to see the conversion formula';
+      clearEquivalents();
+      return;
+    }
+
+    srcError.textContent = '';
+    srcInput.classList.remove('input-error');
+    dstError.textContent = '';
+
+    var value    = validation.sanitized;
+    var fromKey  = srcUnit.value;
+    var toKey    = dstUnit.value;
+
+    // Convert
+    var conv;
+    try {
+      conv = CV.convert(value, fromKey, toKey);
+    } catch (e) {
+      dstError.textContent = 'Conversion error';
+      return;
+    }
+
+    // Update destination input (strip the unit suffix for the editable field)
+    dstInput.value = CV.formatNumber(conv.result);
+    dstInput.classList.remove('input-error');
+
+    // Update formula
+    formulaText.textContent = conv.formula;
+
+    // Update equivalents (always from the source)
+    renderEquivalents(value, fromKey, srcField);
+  }
+
+  function clearEquivalents() {
+    binaryEquivs.innerHTML  = '<div class="equiv-row"><span class="equiv-unit">—</span><span class="equiv-value">—</span></div>';
+    decimalEquivs.innerHTML = '<div class="equiv-row"><span class="equiv-unit">—</span><span class="equiv-value">—</span></div>';
+  }
+
+  function renderEquivalents(value, unit, srcField) {
+    var equivs;
+    try {
+      equivs = CV.getEquivalents(value, unit);
+    } catch (e) {
+      clearEquivalents();
+      return;
+    }
+
+    // Determine which unit keys are the "source" and "destination"
+    var srcKey = unit;
+    var dstKey = (srcField === 'from') ? toUnit.value : fromUnit.value;
+
+    // Render binary column
+    var binHtml = '';
+    var binUnits = Object.keys(equivs.binary);
+    binUnits.forEach(function(key) {
+      var e = equivs.binary[key];
+      var hlClass = (key === srcKey || key === dstKey) ? ' highlight' : '';
+      binHtml += '<div class="equiv-row' + hlClass + '">';
+      binHtml += '<span class="equiv-unit">' + escapeHtml(key) + '</span>';
+      binHtml += '<span class="equiv-value">' + escapeHtml(e.formattedResult) + '</span>';
+      binHtml += '<button class="mini-copy" data-value="' + escapeHtml(e.formattedResult) + '" title="Copy">📋</button>';
+      binHtml += '</div>';
+    });
+    binaryEquivs.innerHTML = binHtml;
+
+    // Render decimal column
+    var decHtml = '';
+    var decUnits = Object.keys(equivs.decimal);
+    decUnits.forEach(function(key) {
+      var e = equivs.decimal[key];
+      var hlClass = (key === srcKey || key === dstKey) ? ' highlight' : '';
+      decHtml += '<div class="equiv-row' + hlClass + '">';
+      decHtml += '<span class="equiv-unit">' + escapeHtml(key) + '</span>';
+      decHtml += '<span class="equiv-value">' + escapeHtml(e.formattedResult) + '</span>';
+      decHtml += '<button class="mini-copy" data-value="' + escapeHtml(e.formattedResult) + '" title="Copy">📋</button>';
+      decHtml += '</div>';
+    });
+    decimalEquivs.innerHTML = decHtml;
+
+    // Bind mini-copy buttons
+    bindMiniCopyButtons();
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  // ── Event Handlers ────────────────────────────────────────────────────
+
+  // Track which field the user is editing
+  fromInput.addEventListener('focus', function() { sourceField = 'from'; });
+  toInput.addEventListener('focus', function()   { sourceField = 'to'; });
+
+  // Debounced input handler
+  function onInputChange() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(runConversion, DEBOUNCE_MS);
+  }
+
+  fromInput.addEventListener('input', onInputChange);
+  toInput.addEventListener('input', onInputChange);
+
+  // Unit select changes
+  fromUnit.addEventListener('change', runConversion);
+  toUnit.addEventListener('change', runConversion);
+
+  // When the user edits the output field, it automatically becomes the source.
+  // But since the output field is readonly, we need to make it editable on focus.
+  // Actually, let's make both editable — the user types in whichever they want.
+  toInput.removeAttribute('readonly');
+
+  // Swap button
+  swapBtn.addEventListener('click', function() {
+    // Swap values
+    var tmpVal = fromInput.value;
+    fromInput.value = toInput.value;
+    toInput.value = tmpVal;
+
+    // Swap units
+    var tmpUnit = fromUnit.value;
+    fromUnit.value = toUnit.value;
+    toUnit.value = tmpUnit;
+
+    // Clear errors
+    fromError.textContent = '';
+    toError.textContent = '';
+    fromInput.classList.remove('input-error');
+    toInput.classList.remove('input-error');
+
+    // Keep source field direction
+    // If user was typing in "from", keep "from" as source (which now has the old "to" value)
+    runConversion();
+  });
+
+  // ── Copy Handlers ─────────────────────────────────────────────────────
+
+  function copyToClipboard(text, label) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        showToast(label || ('Copied: ' + text));
+      }).catch(function() {
+        fallbackCopy(text, label);
+      });
+    } else {
+      fallbackCopy(text, label);
+    }
+  }
+
+  function fallbackCopy(text, label) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.top = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      var success = document.execCommand('copy');
+      if (success) {
+        showToast(label || ('Copied: ' + text));
+      } else {
+        showToast('Press Ctrl+C to copy');
+      }
+    } catch (e) {
+      showToast('Press Ctrl+C to copy');
+    }
+    document.body.removeChild(ta);
+  }
+
+  formulaCopyBtn.addEventListener('click', function() {
+    copyToClipboard(formulaText.textContent, 'Formula copied!');
+  });
+
+  function bindMiniCopyButtons() {
+    var buttons = document.querySelectorAll('.mini-copy');
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var val = this.getAttribute('data-value');
+        copyToClipboard(val, 'Copied: ' + val);
+      });
+    });
+  }
+
+  // ── Toast Notifications ───────────────────────────────────────────────
+
+  function showToast(message) {
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+
+    // Auto-remove after animation completes (2s total)
+    setTimeout(function() {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 2200);
+
+    // Limit visible toasts to 3
+    var toasts = toastContainer.querySelectorAll('.toast');
+    if (toasts.length > 3) {
+      toasts[0].parentNode.removeChild(toasts[0]);
+    }
+  }
+
+  // ── Keyboard Shortcuts ────────────────────────────────────────────────
+
+  document.addEventListener('keydown', function(e) {
+    // Ctrl+Shift+S or Ctrl+Shift+X to swap
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'S' || e.key === 's' || e.key === 'X' || e.key === 'x')) {
+      e.preventDefault();
+      swapBtn.click();
+    }
+  });
+
+  // ── Initialize ────────────────────────────────────────────────────────
+  runConversion();
+  bindMiniCopyButtons();
+
+})();
+</script>
+
+</body>
+</html>
