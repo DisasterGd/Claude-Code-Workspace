@@ -1,0 +1,42 @@
+# ─── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+*.whl
+.eggs/
+
+# ─── PyInstaller ───────────────────────────────────────────
+*.spec
+*.manifest
+
+# ─── Virtual Environments ──────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+
+# ─── Claude Code ───────────────────────────────────────────
+.claude/
+
+# ─── IDE / Editor ──────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cursor/
+
+# ─── OS Files ──────────────────────────────────────────────
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# ─── Logs & Temp ───────────────────────────────────────────
+*.log
+*.tmp
+.temp/
