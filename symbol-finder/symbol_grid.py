@@ -8,7 +8,7 @@ Supports:
     - Keyboard navigation (arrow keys within grid)
     - Focus management
 """
-from PyQt5.QtCore import Qt, QSize, QRect, QPoint
+from PyQt5.QtCore import Qt, QSize, QRect, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (QScrollArea, QWidget, QLayout, QLayoutItem,
                               QWidgetItem, QStyle, QSizePolicy, QLabel,
                               QVBoxLayout)
