@@ -1,0 +1,14 @@
+[Unit]
+Description=1024test server
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/test
+ExecStart=/home/test/venv/bin/python /home/test/server.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

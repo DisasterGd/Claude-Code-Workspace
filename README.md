@@ -1,152 +1,26 @@
-# Symbol Finder & Capacity Converter
+# Claude-Code 工作区
 
-两个实用的 Windows 桌面工具集合。
+本仓库包含若干独立小项目。
 
----
+## 目录
 
-## 🔣 Symbol Finder — Windows 特殊符号查找工具
+| 目录 | 说明 |
+| --- | --- |
+| [`1024test/`](1024test/) | 部署验收测试项目（Python TCP 客户端/服务端 + MySQL） |
+| [`previous-projects/`](previous-projects/) | 历史项目：Symbol Finder、Capacity Converter |
 
-替代 Windows 自带 Win+. 面板中 Ω 符号选项卡的桌面工具。收录 **797 个特殊符号**，为每个符号配中文名称，支持分类浏览和一键复制。
+## 1024test
 
-### 为什么需要它？
+Python + MySQL 的客户端/服务端示例项目，用于 Linux（systemd）部署与功能验收。
 
-Windows 自带的符号面板（Win + . → Ω 选项卡）有三大痛点：
-- **符号没有名称标注** — 鼠标悬停只显示放大预览，不知道叫什么
-- **没有搜索功能** — 找一个符号如大海捞针
-- **分类粗糙** — 只能滚动浏览，没有细分
+- 服务端 `server.py`：systemd 托管，后台持久运行、开机自启。
+- 客户端命令 `1024test`：`-m` 创建用户、`-l` 登录、`-v` 查看版本。
 
-Symbol Finder 解决了所有这些问题。
+详见 [1024test/README.md](1024test/README.md)。
 
-### 截图
+## 历史项目（已归档）
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│  菜单栏: 文件(F)  视图(V)  帮助(H)                             │
-├──────────────────────────────────────────────────────────────┤
-│  Symbol Finder · Windows 特殊符号查找工具          [主题]     │
-├──────────────────┬───────────────────────────────────────────┤
-│  分类            │  🔍 搜索符号名称...                         │
-│                  │  常规标点 > 破折号/连字符 (11 个符号)       │
-│  ▾ 常规标点      │                                           │
-│    ● 破折号/连字符│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐     │
-│      引号        │  │  —   │ │  –   │ │  ―   │ │  ‑   │     │
-│      括号        │  │长破折号│ │短破折号│ │水平线 │ │不换行 │     │
-│      其他标点    │  └──────┘ └──────┘ └──────┘ └──────┘     │
-│  ▸ 货币符号      │                                           │
-│  ▸ 拉丁符号      │                                           │
-│  ▸ 几何符号      │                                           │
-│  ▸ 数学符号      │                                           │
-│  ▸ 附加符号      │                                           │
-│  ▸ 语言符号      │                                           │
-├──────────────────┴───────────────────────────────────────────┤
-│  状态栏: 共 797 个符号 · 点击复制 · 方向键导航                 │
-└──────────────────────────────────────────────────────────────┘
-```
+- **Symbol Finder** — Windows 特殊符号查找工具（Tkinter 桌面应用，797 个符号）。
+- **Capacity Converter** — 二进制容量换算工具（JS CLI + 网页版）。
 
-### 功能
-
-- **分类浏览** — 7 大类、31 个子类，层级树导航
-- **中文搜索** — 按符号名称实时过滤，150ms 防抖
-- **一键复制** — 点击卡片复制符号到剪贴板
-- **右键菜单** — 可选择复制符号、Unicode 码位、中文名称
-- **键盘导航** — ↑↓←→ 移动焦点，Enter/Space 复制，Ctrl+F 搜索，Esc 清除
-- **暗/亮主题** — Ctrl+T 切换，自动持久化
-- **桌面原生** — 菜单栏、状态栏，窗口缩放时卡片自动换行
-
-### 收录范围
-
-| 分类 | 子类数 | 符号数 |
-|---|---|---|
-| 常规标点 | 4 | 85 |
-| 货币符号 | 1 | 35 |
-| 拉丁符号 | 4 | 185 |
-| 几何符号 | 7 | 114 |
-| 数学符号 | 7 | 165 |
-| 附加符号 | 4 | 100 |
-| 语言符号 | 4 | 113 |
-| **合计** | **31** | **797** |
-
-### 运行方式
-
-```bash
-# 方式一：Python 直接运行
-cd symbol-finder
-pip install PyQt5
-python main.py
-
-# 方式二：打包为独立 .exe（无需 Python 环境）
-build.bat
-# → dist\SymbolFinder.exe
-```
-
-### 键盘快捷键
-
-| 快捷键 | 功能 |
-|---|---|
-| `↑ ↓ ← →` | 在符号卡片间移动焦点 |
-| `Enter` / `Space` | 复制焦点卡片符号 |
-| `Ctrl+F` | 聚焦搜索栏 |
-| `Esc` | 清除搜索/恢复浏览 |
-| `Ctrl+T` | 切换暗色/亮色主题 |
-| `Ctrl+Q` | 退出程序 |
-
----
-
-## 💾 Capacity Converter — 二进制容量换算工具
-
-支持 16 种单位的二进制/十进制容量换算 Web 工具。
-
-### 功能
-
-- 双向编辑 — 两个输入框均可输入
-- 16 种单位 — IEC 二进制（KiB→EiB）和 SI 十进制（KB→EB）
-- 公式展示 — 显示中间 bit 计算过程
-- 一键互换 — 交换 from/to 值和单位
-- 暗色/亮色主题 — 自动检测系统偏好 + 手动切换
-- 零依赖 — 纯原生 HTML/CSS/JS，双击即用
-
-### 运行
-
-```bash
-# 浏览器直接打开
-start capacity-converter/index.html
-
-# 或命令行
-node capacity-converter/cli.js 500 GB --all
-```
-
----
-
-## 📁 项目结构
-
-```
-├── README.md
-├── .gitignore
-├── symbol-finder/               # PyQt5 桌面符号检索工具
-│   ├── main.py                  # 应用入口
-│   ├── main_window.py           # 主窗口
-│   ├── symbol_data.py           # 符号数据库 (797 条)
-│   ├── category_tree.py         # 分类树组件
-│   ├── symbol_card.py           # 符号卡片组件
-│   ├── symbol_grid.py           # 符号网格 (FlowLayout)
-│   ├── search_bar.py            # 搜索栏 (防抖)
-│   ├── theme_manager.py         # 主题管理 (QSS)
-│   ├── build.bat                # PyInstaller 打包脚本
-│   └── requirements.txt
-└── capacity-converter/          # Web 容量换算工具
-    ├── index.html               # 主页面 (HTML+CSS+JS)
-    ├── converter.js             # 核心换算库 (UMD)
-    ├── cli.js                   # Node.js CLI
-    └── README.md
-```
-
-## 🔧 技术栈
-
-| 工具 | 技术 |
-|---|---|
-| Symbol Finder | Python 3 + PyQt5 + PyInstaller |
-| Capacity Converter | Vanilla HTML/CSS/JS (零依赖) |
-
-## 📄 License
-
-MIT
+详见 [previous-projects/README.md](previous-projects/README.md)。

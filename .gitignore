@@ -17,7 +17,12 @@ build/
 venv/
 .venv/
 env/
-.env/
+
+# ─── Environment / Secrets ─────────────────────────────────
+.env
+.env.local
+.env.*.local
+!.env.example
 
 # ─── Claude Code ───────────────────────────────────────────
 .claude/
